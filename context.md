@@ -104,6 +104,14 @@
   - `global.css`: `:root` declares `--announce-h: 0px` fallback; `.hero-video` padding-top = `calc(var(--announce-h) + var(--nav-h))` and `.hero-frame` min-height subtracts it too (also in the 720px media query), with 0.35s transitions matching the bar's AnimatePresence collapse so dismissing the bar animates the card up smoothly.
 - **Verified:** `npm run build` passes.
 
+### 2026-07-22 — GitHub repo created + first push (v1.10.4)
+- **Requested:** Create a public GitHub repo named `new-clix` and push everything necessary.
+- **Done:**
+  - Created `.gitignore` — excludes `node_modules/`, `dist/`, logs, editor/OS junk, env files, and `clone.html` (saved scale.com homepage = copyrighted reference material, must not be published).
+  - `git init -b main`, initial commit `3c357c4` (23 files: src/, index.html, vite.config.js, package.json + lock, CLAUDE.md, context.md, .gitignore).
+  - `gh repo create new-clix --public --source . --remote origin --push` under the **TheSuperShyy** account → https://github.com/TheSuperShyy/new-clix, `main` tracking `origin/main`.
+- **State/next:** Project is now a git repo with remote. Commit + push future changes as tasks finish. Backlog unchanged (hamburger menu, nav dropdowns, real logo SVGs, favicon, deploy, self-host videos).
+
 ### 2026-07-21 — Impact thumbnails get circular floating motion (v1.10.3)
 - **Requested:** User (screenshot of Impact section) said "the animation on the pictures is revolving in circles" — clarified via question: they want the pictures to slowly revolve in circles (ambient orbit), on top of the existing scroll drift.
 - **Done:**
