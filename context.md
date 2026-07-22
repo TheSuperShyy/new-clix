@@ -104,6 +104,17 @@
   - `global.css`: `:root` declares `--announce-h: 0px` fallback; `.hero-video` padding-top = `calc(var(--announce-h) + var(--nav-h))` and `.hero-frame` min-height subtracts it too (also in the 720px media query), with 0.35s transitions matching the bar's AnimatePresence collapse so dismissing the bar animates the card up smoothly.
 - **Verified:** `npm run build` passes.
 
+### 2026-07-22 — Impact word now hover-driven (image → industry) (v1.12)
+- **Requested:** The highlighted word in the Impact band should change only on image hover, and the word should match the meaning of the hovered image (not auto-cycle on scroll).
+- **Done (Impact.jsx + global.css):**
+  - Removed the pinned scroll cycle + upward drift timeline entirely. Kept the clip-path inset→full-bleed "sheet rises over Proof" tween (still the only GSAP here, reduced-motion gated). Section is no longer pinned, so it's shorter now.
+  - Highlighted word is React state (`word`, default 'Healthcare'), rendered as a single `Real <em>{word}</em>` whose color comes from `COLOR[word]` (PHASES map). Smooth `transition: color .3s` on `.impact-line2 em`.
+  - Each of the 12 `CARDS` gained a `word` field (the industry it depicts). Thumbnails are now `<button>`s (keyboard-focusable): `onMouseEnter`/`onFocus` → `setWord(card.word)`, `onMouseLeave`/`onBlur` → back to default. CSS resets button chrome, adds hover/focus `scale(1.08)` + stronger shadow + focus-visible outline. Orbit float on inner img unchanged.
+  - **Image→word mapping (best-guess from the screenshot; user can correct any):** Manufacturing = 3861969, 3862130, 3183150; Finance = 1181671, 3184465, 8386440, 3184292; Logistics = 3183197, 4481259; Healthcare = 356040, 4386466, 1181244.
+  - CSS: removed `.impact-phrase` rules (no more stacked cycling phrases); `.impact-line2` now `display: block`.
+  - Verified: `npm run build` passes (447 modules, CSS 25.20 kB, JS 440.39 kB gzip 149.39 kB).
+- **State/next:** Impact band no longer pins/cycles; hover an image → highlighted industry word + color updates. Image→word mapping is approximate — refine per real image content if needed. Backlog unchanged.
+
 ### 2026-07-22 — Signal intro words split apart on scroll (v1.11 → v1.11.1: "Artificial Intelligence")
 - **Requested:** "add a text in the center like 2 words that will split into 2 and as i scroll it will part ways on left and right" — over the Signal flow-field card. **v1.11.1:** change the pair to something AI-related → now "Artificial" / "Intelligence".
 - **Done:**
@@ -264,3 +275,62 @@
   - Secondary-tone bands: `.announce` bg `#000`→`var(--bg-2)`; `.marquee-section` gets `background: var(--bg-2)` + padding 64→72px (mirrors ref's quote band); `.footer` gets `background: var(--bg-2)` (mirrors ref's dark footer).
   - Normalized off-system backgrounds to main tone (those regions are the main color on the reference): `.stats` blue gradient removed (border-block only), `.research` `--surface` bg removed (border-block only), `.research-card` bg `rgba(13,13,13,0.35)`→`var(--surface)` so cards stay visible on the main bg.
 - **Verified:** `npm run build` passes (CSS 14.06 kB).
+
+---
+
+## 2026-07-22 — Client testimonials section
+
+**Requested:** Add a client-testimonials section like scale.com's "Proven across every industry." horizontal card carousel.
+
+**Done:**
+- New `src/sections/Testimonials.jsx` — horizontal scroll-snap carousel of 6 client cards. Each card: monogram logo tile (accent-tinted per industry), big display-font quote, company name + industry footer. Framer Motion staggered `whileInView` entry.
+- Prev/next `←`/`→` arrow buttons (`.tm-nav`) that `scrollBy` roughly one card width via a `trackRef`. Heading "Proven across every industry." with a "Customers" section-label sits in `.tm-bar` below the track.
+- Original fictional Clix clients (Northwind Health, Meridian Times, Atlas Development, Vanta Robotics, Halcyon Financial, Portway Logistics) — no real Scale clients or verbatim copy, per the no-copy rule.
+- Wired into `App.jsx` between `<Impact />` and `<Products />`. Sits on a dark `--bg` band (not in the `--bg-2` rhythm list) to alternate against the light Impact sheet above and light Products below.
+- `global.css`: `.testimonials` / `.tm-track` (edge-bleed horizontal scroll, hidden scrollbar, snap) / `.tm-card` / `.tm-logo` (color-mix accent tile) / `.tm-quote` / `.tm-foot` / `.tm-bar` / `.tm-arrow` (round, accent hover, focus-visible). Mobile: cards go 82vw, bar stacks.
+
+**State:** Builds clean (`npm run build`, CSS 27.22 kB, JS 442.96 kB gzip 150.18 kB). Not yet pushed to the new-clix repo — push only when asked. Client names/quotes are placeholders the user can rename.
+
+---
+
+## 2026-07-22 — Testimonials: light theme + draggable infinite loop
+
+**Requested:** Make the testimonials carousel match the reference — light background (white cards, dark text), grab/drag to scroll, infinite cycling, arrows at the bottom.
+
+**Done:**
+- `Testimonials.jsx`: dropped Framer Motion; now plain refs. Renders 3 copies of CLIENTS (`LOOP`) and parks the viewport in the middle copy on mount. A `scroll` handler (`recenter`) jumps by one-third whenever it drifts into an outer copy → seamless infinite loop for drag, wheel, and arrows. Pointer-drag handlers (down/move/up + pointer capture) set `scrollLeft = startScroll - dx`; a capture-phase click guard swallows the post-drag click. Only the middle copy is exposed to a11y; outer copies `aria-hidden`.
+- `global.css`: `.testimonials` now light `#f4f4f6` / `#101014` text to match the Impact sheet above (ref carousel is white). Cards are white with soft shadow; removed scroll-snap for free drag; `cursor: grab` / `.is-dragging` → `grabbing` + `scroll-behavior:auto` + card `pointer-events:none`. Logo tile accent via `color-mix(... #fff)`. Arrows: white → black-on-hover. `.tm-label`/`.tm-title` darkened for the light band.
+
+**State:** Builds clean (CSS 27.45 kB, JS 444.00 kB gzip 150.50 kB). Not pushed. Client names/quotes still placeholders.
+
+---
+
+## 2026-07-22 — Impact tiles: stock photos → product videos (even 3-way split)
+
+**Requested:** Replace the Impact section's scattered stock images with real Clix videos from the uploaded `Shorts Video Clix/` folder, split evenly across three categories: Website, CRM, n8n/automation.
+
+**Done:**
+- Selected 4 clips per category (12 total, matching the 12 tiles): **web1–4** (YUL/Websites 05,01,03,06), **crm1–4** (Charles sales-manager-dashboard; Elsa American Spa, schedule-calendar, integrate-Timeless), **n8n1–4** (YUL clix-automation-01; Miko marketing bot v1, eshel bot demo, eshel bot).
+- Compressed each with ffmpeg → `public/impact/{web,crm,n8n}{1-4}.mp4`: first 12s, muted, no audio, long-edge capped 720px, 24fps, H.264 CRF 30, +faststart. Total **~2.3 MB** for all 12.
+- `Impact.jsx`: replaced `PHASES`/industry words with `CATEGORIES` (web→Websites #1d4ed8, crm→CRM #0f766e, n8n→Automation #b45309). `CARDS` now carry `src` (clip name) + `cat`. Tiles render `<video autoPlay loop muted playsInline preload="metadata">` (was `<img>`); centered hover preview is also a `<video>`. Center title word now follows the hovered tile's **category** ("Real Websites/CRM/Automation") and persists after mouse-leave. CSS unchanged — `.impact-card-img`/`.impact-preview-img` (object-fit cover) work for video as-is.
+- `.gitignore`: added `Shorts Video Clix/` (raw originals, 15–370MB each) so only the compressed `public/impact` loops ship.
+
+**State:** Builds clean (CSS 27.96 kB, JS 444.62 kB gzip 150.52 kB); all 12 videos copied into `dist/impact` (2.3 MB). Not pushed. Encode script saved in scratchpad.
+
+**Revision (same day):** Videos looked blurry and the preview cropped the landscape. Re-encoded at 1280px long-edge / CRF 21 (was 720/CRF30) → crisp screen-recording text, ~25 MB total for 12. `global.css` `.impact-preview` widened to `min(90vw,1180px)` and `.impact-preview-img` switched to natural aspect (`height:auto`, `object-fit:contain`, no forced 4/3) so the full landscape frame shows uncropped. Builds clean.
+
+**Follow-ups (same day):**
+- Fixed portrait preview overflow: `.impact-preview-img` now caps `max-width:min(90vw,1180px)` AND `max-height:80vh` (was width-only) so portrait clips fit the viewport; `.impact-preview` shrink-wraps (removed fixed width, `line-height:0`).
+- Moved n8n2 tile from `top:27,left:26` (overlapped the "Applied" title) to `top:15,left:14`.
+- Inserted `nave.mp4` (Miko) as a 13th tile → encoded to `public/impact/n8n5.mp4` (~1.6MB), CARD `{src:'n8n5', top:88, left:18, w:92, ar:'4/3', cat:'n8n'}`. Split is now website 4 / crm 4 / n8n 5 (user opted to break the even split to add nave). Builds clean.
+
+## 2026-07-22 — Impact: dedicated mobile carousel layout
+
+**Requested:** Mobile looked bad — scattered tiles shrank to tiny/blank boxes, CRM not visibly represented, videos not showing well.
+
+**Done:**
+- `Impact.jsx`: added `useIsMobile()` (matchMedia `max-width:720px`, initialized from matchMedia so no first-paint flash). Renders EITHER the desktop scattered `.impact-stage` OR a new mobile `.impact-mobile` — only one mounts, so videos aren't loaded twice.
+- Mobile layout: left-aligned title "Applied Intelligence / Real Solutions" (static blue accent) + Get started, then three labeled swipeable rows via `GROUPS` (derived from CARDS by `cat`): WEBSITES (4), CRM (4), AUTOMATION (5). Each clip is a `.impact-mvid` card (68vw, max 340px, 16:10, object-fit cover, scroll-snap). Color-coded category heads (blue/teal/amber).
+- `global.css`: replaced the earlier mobile scatter-scaling/halo rules with the carousel styles (`.impact-mobile`, `.impact-cat`, `.impact-cat-head/-dot/-name`, `.impact-cat-row` horizontal snap + hidden scrollbar, `.impact-mvid`). Kept tablet 721–900px `.impact-card{scale:.88}`.
+
+**State:** Builds clean (CSS 28.83 kB, JS 445.99 kB gzip 150.85). Desktop scattered layout unchanged. Not pushed. User to verify on device; possible follow-up: tap-to-fullscreen on a mobile clip, card width tuning.

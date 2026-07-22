@@ -6,6 +6,7 @@ import Hero from './sections/Hero.jsx'
 import Signal from './sections/Signal.jsx'
 import Proof from './sections/Proof.jsx'
 import Impact from './sections/Impact.jsx'
+import Testimonials from './sections/Testimonials.jsx'
 import Products from './sections/Products.jsx'
 import Stats from './sections/Stats.jsx'
 import Solutions from './sections/Solutions.jsx'
@@ -37,6 +38,7 @@ export default function App() {
         <Signal />
         <Proof />
         <Impact />
+        <Testimonials />
         <Products />
         <Stats />
         <Solutions />

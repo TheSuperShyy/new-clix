@@ -7,6 +7,9 @@ dist/
 # Local reference material (saved copy of scale.com — not ours to publish)
 clone.html
 
+# Raw source videos (huge originals; compressed web loops live in public/impact)
+Shorts Video Clix/
+
 # Logs
 *.log
 npm-debug.log*
