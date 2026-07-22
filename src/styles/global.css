@@ -1501,6 +1501,9 @@ ul { list-style: none; }
 /* Light band matching the Impact sheet directly above it (ref: Scale's white
    customer carousel). Dark text on a light surface, white cards. */
 .testimonials {
+  /* Small, consistent side gutter shared by the card track and the heading
+     bar so both span the same near-full width (ref: Scale's carousel). */
+  --tm-gutter: clamp(24px, 3vw, 60px);
   padding: 120px 0;
   overflow: hidden;
   background: #f4f4f6;
@@ -1513,7 +1516,7 @@ ul { list-style: none; }
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  padding-inline: max(24px, calc((100vw - var(--container)) / 2));
+  padding-inline: var(--tm-gutter);
   padding-bottom: 8px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -1578,27 +1581,35 @@ ul { list-style: none; }
   padding-top: 26px;
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 12px;
 }
-.tm-name { font-weight: 600; color: #101014; }
-.tm-industry {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(16, 16, 20, 0.42);
+/* Scale shows only the client name at the foot, in muted gray. */
+.tm-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: rgba(16, 16, 20, 0.5);
 }
 
 /* Heading + arrow controls, aligned to the container below the track. */
 .tm-bar {
-  margin-top: 48px;
+  margin-top: 36px;
+  padding-inline: var(--tm-gutter);
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
 }
-.tm-title { color: #101014; }
+/* Single lighter line matching Scale's carousel heading — not the big
+   bold section-title used elsewhere. */
+.tm-title {
+  color: #101014;
+  font-size: clamp(28px, 3.4vw, 44px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  max-width: none;
+  white-space: nowrap;
+}
 .tm-nav { display: flex; gap: 12px; flex-shrink: 0; }
 .tm-arrow {
   width: 58px;
@@ -1646,4 +1657,5 @@ ul { list-style: none; }
   .testimonials { padding: 88px 0; }
   .tm-card { flex-basis: 82vw; min-height: 300px; padding: 24px; }
   .tm-bar { flex-direction: column; align-items: flex-start; }
+  .tm-title { white-space: normal; }
 }

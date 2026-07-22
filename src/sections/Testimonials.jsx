@@ -157,13 +157,12 @@ export default function Testimonials() {
             <p className="tm-quote">{c.quote}</p>
             <div className="tm-foot">
               <span className="tm-name">{c.name}</span>
-              <span className="tm-industry">{c.industry}</span>
             </div>
           </article>
         ))}
       </div>
 
-      <div className="container tm-bar">
+      <div className="tm-bar">
         <h2 className="section-title tm-title">Proven across every industry.</h2>
         <div className="tm-nav">
           <button

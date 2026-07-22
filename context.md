@@ -349,3 +349,16 @@
 - Left `.btn-link` (inline "Learn more →" text link with arrow) untouched — it's a link affordance, not a boxed button.
 
 **State:** Builds clean (CSS 30.03 kB gzip 6.96, JS 445.99 kB gzip 150.85). Not pushed.
+
+## 2026-07-23 — Testimonials layout matched to Scale carousel
+- Requested: make the testimonials/"Proven across every industry." section match scale.com's carousel layout.
+- Changes (Testimonials.jsx + global.css):
+  - Heading `.tm-title` is now a single lighter line (weight 500, clamp 28–44px, nowrap on desktop, wraps on mobile) instead of the big bold two-line section-title.
+  - Removed the per-card industry category tag (MEDIA/REAL ESTATE/…); card foot now shows only the client name in muted gray (weight 500, 15px, rgba 0.5), matching Scale.
+- Kept Clix's own fictional clients + monogram tiles (no Scale client names/logos copied) — structural clone only.
+- Build clean: CSS 30.06 kB (gzip 6.97), JS 445.93 kB (gzip 150.84). Not yet pushed.
+
+## 2026-07-23 — Testimonials spacing/position fix
+- Reported: heading + arrow bar looked indented/pinched vs Scale (bar was in the 1200px .container while cards bled full-width).
+- Fix (Testimonials.jsx + global.css): dropped `container` class from `.tm-bar`; added shared `--tm-gutter: clamp(24px,3vw,60px)` on `.testimonials`, applied to both `.tm-track` padding-inline and `.tm-bar` padding-inline so heading/arrows span the same near-full width as the cards. Reduced `.tm-bar` margin-top 48px → 36px.
+- Build clean: CSS 30.10 kB (gzip 6.97). Not yet pushed.
