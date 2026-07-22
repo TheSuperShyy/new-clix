@@ -224,6 +224,7 @@ export default function Signal() {
   const copyRef = useRef(null)
   const appRef = useRef(null)
   const canvasRef = useRef(null)
+  const splitRef = useRef(null)
 
   useGSAP(
     () => {
@@ -314,8 +315,32 @@ export default function Signal() {
             invalidateOnRefresh: true,
           },
         })
+        const [wordL, wordR] = splitRef.current.children
+
         tl.to(card, { scale: coverScale, ease: 'power1.inOut', duration: 1 }, 0)
           .to(card, { borderRadius: 0, borderColor: 'transparent', duration: 0.2 }, 0.15)
+          // The centered pair parts ways: left word exits left, right word
+          // exits right, fading as they clear the card edges.
+          .to(
+            wordL,
+            {
+              x: () => -window.innerWidth * 0.45,
+              autoAlpha: 0,
+              ease: 'power1.in',
+              duration: 0.35,
+            },
+            0,
+          )
+          .to(
+            wordR,
+            {
+              x: () => window.innerWidth * 0.45,
+              autoAlpha: 0,
+              ease: 'power1.in',
+              duration: 0.35,
+            },
+            0,
+          )
           .fromTo(
             copy,
             { autoAlpha: 0, y: 36 },
@@ -336,6 +361,9 @@ export default function Signal() {
       // section as background, headline visible on top.
       mm.add('(prefers-reduced-motion: reduce)', () => {
         gsap.set(card, { scale: coverScale(), borderRadius: 0, borderColor: 'transparent' })
+        // No scroll choreography: the end-state headline is already shown,
+        // so the intro word pair would just overlap it.
+        gsap.set(splitRef.current, { autoAlpha: 0 })
       })
 
       return () => {
@@ -352,6 +380,11 @@ export default function Signal() {
         <div className="signal-canvas-wrap" ref={cardRef}>
           <canvas ref={canvasRef} />
         </div>
+        <div className="signal-split" ref={splitRef} aria-hidden="true">
+          <span className="signal-split-word">Artificial</span>
+          <span className="signal-split-word">Intelligence</span>
+        </div>
+
         <div className="signal-app" ref={appRef} aria-hidden="true">
           <aside className="sapp-side">
             <div className="sapp-logo">

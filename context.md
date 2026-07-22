@@ -104,6 +104,14 @@
   - `global.css`: `:root` declares `--announce-h: 0px` fallback; `.hero-video` padding-top = `calc(var(--announce-h) + var(--nav-h))` and `.hero-frame` min-height subtracts it too (also in the 720px media query), with 0.35s transitions matching the bar's AnimatePresence collapse so dismissing the bar animates the card up smoothly.
 - **Verified:** `npm run build` passes.
 
+### 2026-07-22 — Signal intro words split apart on scroll (v1.11 → v1.11.1: "Artificial Intelligence")
+- **Requested:** "add a text in the center like 2 words that will split into 2 and as i scroll it will part ways on left and right" — over the Signal flow-field card. **v1.11.1:** change the pair to something AI-related → now "Artificial" / "Intelligence".
+- **Done:**
+  - `Signal.jsx`: new `.signal-split` overlay (aria-hidden, pointer-events none) centered over the canvas card with two spans: "Artificial" + "Intelligence" (was "Dependable"/"AI"). Wired into the existing pinned zoom timeline at position 0: left word tweens `x: -45vw`, right word `+45vw` (function-based, `power1.in`, duration 0.35) with autoAlpha fade — so the pair parts ways during the first third of the card's zoom-to-fullscreen. Reduced motion: overlay hidden (`autoAlpha 0`) since the static end-state headline is already visible.
+  - `global.css`: `.signal-split` (absolute inset-0 flex-center, z-2, gap 0.4em) + `.signal-split-word` (display font 600, clamp(28px, 4.4vw, 68px) + `white-space: nowrap` — sized down from the original two-short-word clamp so the longer pair doesn't overflow the card, #f4f4f6, soft text-shadow, will-change).
+  - Verified: `npm run build` passes (447 modules, CSS 24.97 kB, JS 440.83 kB gzip 149.48 kB).
+- **State/next:** Signal scroll story now: centered "Dependable AI" over the card → words part left/right while card zooms fullscreen → North-style headline + CRM panel slide in. Backlog unchanged.
+
 ### 2026-07-22 — GitHub repo created + first push (v1.10.4)
 - **Requested:** Create a public GitHub repo named `new-clix` and push everything necessary.
 - **Done:**

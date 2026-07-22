@@ -435,6 +435,29 @@ ul { list-style: none; }
   pointer-events: none;
 }
 .signal canvas { width: 100%; height: 420px; }
+/* Intro word pair centered over the canvas card; GSAP slides the words
+   apart (left / right) as the card zooms up on scroll. */
+.signal-split {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  pointer-events: none;
+}
+.signal-split-word {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4.4vw, 68px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #f4f4f6;
+  text-shadow: 0 4px 30px rgba(13, 13, 13, 0.6);
+  will-change: transform, opacity;
+}
 /* Copy composed like the North reference: big headline low on the left,
    hugging the bottom-left corner with a small fixed margin. */
 .signal-copy {
