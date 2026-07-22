@@ -111,7 +111,15 @@ ul { list-style: none; }
 .accent { color: var(--accent); }
 
 /* ============ Buttons ============ */
+/* Glass style: at rest every button is just a translucent outline. On
+   hover/focus a color layer sweeps up from the bottom to fill it. The fill is
+   a ::before pinned to inset:0 (the padding box) so it colors the interior but
+   never covers the border, and sits at z-index:-1 so the label stays on top.
+   Per-variant colors come from the --btn-* custom properties. */
 .btn {
+  position: relative;
+  isolation: isolate;          /* keep the fill's z-index:-1 scoped to the button */
+  overflow: hidden;            /* clip the fill to the rounded corners */
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -119,20 +127,56 @@ ul { list-style: none; }
   border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-  white-space: nowrap;
-}
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-.btn-primary:hover { background: #ff5e77; }
-.btn-ghost {
-  border: 1px solid var(--line);
-  background: rgba(244, 244, 246, 0.06);
+  border: 1px solid var(--btn-line, var(--line));
+  background: rgba(244, 244, 246, 0.04);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   color: var(--text);
+  white-space: nowrap;
+  transition: color 0.35s ease, border-color 0.35s ease, transform 0.2s ease;
 }
-.btn-ghost:hover { border-color: rgba(244, 244, 246, 0.35); }
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--btn-fill, var(--accent));
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform 0.45s cubic-bezier(0.45, 0, 0.15, 1);
+}
+.btn:hover,
+.btn:focus-visible {
+  border-color: var(--btn-fill, var(--accent));
+  color: var(--btn-text, #fff);
+  transform: translateY(-2px);
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: scaleY(1);
+}
+
+/* Primary: crimson outline → crimson fill, white label. */
+.btn-primary {
+  --btn-line: var(--accent);
+  --btn-fill: var(--accent);
+  --btn-text: #fff;
+  color: var(--accent);
+}
+/* Ghost: light outline → light fill, dark label (color inverse). */
+.btn-ghost {
+  --btn-line: rgba(244, 244, 246, 0.32);
+  --btn-fill: var(--text);
+  --btn-text: #0d0d0d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn::before { transition: color 0.2s ease, border-color 0.2s ease; }
+  .btn::before { transform: scaleY(1); opacity: 0; transition: opacity 0.2s ease; }
+  .btn:hover::before, .btn:focus-visible::before { opacity: 1; }
+  .btn:hover, .btn:focus-visible { transform: none; }
+}
+
 .btn-link {
   color: var(--text);
   font-weight: 600;
@@ -1119,21 +1163,39 @@ ul { list-style: none; }
   font-style: normal;
   transition: color 0.3s ease;
 }
+/* Same glass behavior on the light band: dark outline that fills dark. */
 .impact-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-block;
   margin-top: 42px;
   padding: 14px 30px;
   border-radius: 999px;
-  background: #101014;
-  color: #fff;
+  border: 1px solid #101014;
+  background: transparent;
+  color: #101014;
   font-weight: 600;
   font-size: 15px;
   text-decoration: none;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: color 0.35s ease, transform 0.2s ease;
+}
+.impact-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #101014;
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform 0.45s cubic-bezier(0.45, 0, 0.15, 1);
 }
 .impact-cta:hover {
-  background: #26262e;
+  color: #fff;
   transform: translateY(-2px);
+}
+.impact-cta:hover::before {
+  transform: scaleY(1);
 }
 /* Tablet: gently shrink the scattered tiles toward their centres so the
    edge cards don't crowd or clip on ~768px widths. */

@@ -334,3 +334,18 @@
 - `global.css`: replaced the earlier mobile scatter-scaling/halo rules with the carousel styles (`.impact-mobile`, `.impact-cat`, `.impact-cat-head/-dot/-name`, `.impact-cat-row` horizontal snap + hidden scrollbar, `.impact-mvid`). Kept tablet 721–900px `.impact-card{scale:.88}`.
 
 **State:** Builds clean (CSS 28.83 kB, JS 445.99 kB gzip 150.85). Desktop scattered layout unchanged. Not pushed. User to verify on device; possible follow-up: tap-to-fullscreen on a mobile clip, card width tuning.
+
+---
+
+## 2026-07-23 — Global glass buttons (outline → color-fill on hover)
+
+**Requested:** Make all buttons a glass style — just an outline at rest, and on hover fill with color via animation.
+
+**Done:**
+- `global.css` `.btn` system reworked: transparent glass (rgba .04 + `backdrop-filter: blur(10px)`), 1px outline, label colored per-variant. A `::before` pinned to `inset:0` (padding box, so it never covers the border) at `z-index:-1` scales up from the bottom (`scaleY(0)→1`, 0.45s ease) to fill on `:hover`/`:focus-visible`; label recolors + 2px lift. `isolation:isolate` scopes the z-index; `overflow:hidden` clips the fill to the radius.
+- Variants driven by `--btn-line/--btn-fill/--btn-text`: `.btn-primary` = crimson outline→crimson fill/white text; `.btn-ghost` = light outline→light fill/dark text (inverse). Covers nav login/signup, CTA section, Signal CTA, Research — all use `.btn`/`.btn-primary`/`.btn-ghost` so they inherit automatically.
+- `.impact-cta` (light band) given the same behavior: dark outline → fills `#101014` bottom-up, text→white, keeps the −2px lift.
+- Added `prefers-reduced-motion` fallback (fill fades via opacity instead of scaling; no lift).
+- Left `.btn-link` (inline "Learn more →" text link with arrow) untouched — it's a link affordance, not a boxed button.
+
+**State:** Builds clean (CSS 30.03 kB gzip 6.96, JS 445.99 kB gzip 150.85). Not pushed.
