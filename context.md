@@ -362,3 +362,134 @@
 - Reported: heading + arrow bar looked indented/pinched vs Scale (bar was in the 1200px .container while cards bled full-width).
 - Fix (Testimonials.jsx + global.css): dropped `container` class from `.tm-bar`; added shared `--tm-gutter: clamp(24px,3vw,60px)` on `.testimonials`, applied to both `.tm-track` padding-inline and `.tm-bar` padding-inline so heading/arrows span the same near-full width as the cards. Reduced `.tm-bar` margin-top 48px → 36px.
 - Build clean: CSS 30.10 kB (gzip 6.97). Not yet pushed.
+
+## 2026-07-23 — Impact: swapped two website clips (01,05 → 04,07)
+- Requested: replace website clips 01 and 05 with 04 and 07 in the Impact section.
+- Mapping recap (from 2026-07-22 encode): web1 = clix-vid-website05, web2 = clix-vid-website01, web3 = 03, web4 = 06.
+- Done: re-encoded `Shorts Video Clix/YUL/Websites/clix-vid-website04.mp4` → `public/impact/web1.mp4` (was 05) and `clix-vid-website07.mp4` → `public/impact/web2.mp4` (was 01). Same recipe as the rest: first 12s, muted/no-audio, long-edge 720px, 24fps, H.264 CRF 30, yuv420p, +faststart. New sizes ~325 KB / ~159 KB. No code change (Impact.jsx still references web1/web2). Both landscape 720x~328.
+- Not pushed. Raw originals stay gitignored under `Shorts Video Clix/`.
+- Follow-up (same day): swapped web1 again 04 → clix-vid-website08 (same recipe, ~103 KB). web1 now = website08, web2 = website07.
+
+## 2026-07-23 — Benchmark section (Scale-style 3-card band, pinned reveal)
+- Requested: add scale.com's "We set the benchmark for what's possible with AI" three-card section with a sticky page animation (from screenshot).
+- Done: new `src/sections/Benchmark.jsx` + styles appended to `global.css`; wired into `App.jsx` after `<Stats />`, before `<Solutions />`.
+  - Layout clone: centered `.section-title` heading over a 3-col `.bench-grid`. Each `.bench-card` = gradient media panel (per-card accent: blue #4a6fa5 / crimson #e94560 / green #2e9e5b) with glass icon badge + slow diagonal sheen keyframe (`bench-sheen`), bold `.bench-card-title`, `.bench-card-body`, and a `btn btn-ghost` "Learn More". Clix's own copy (structural clone only).
+  - Animation (GSAP, useGSAP + gsap.matchMedia): desktop `(min-width:961px)` pins the section (`pin:true`, `scrub`, `start top top`, `end +=140%`); timeline `from` heading (y50/fade) then cards (y90/fade, stagger 0.35) so heading settles then cards rise in sequence during the pin. `(max-width:960px)` = non-pinned once-only stagger reveal (3 stacked cards can't fit a pinned viewport). Reduced-motion = natural visible state, sheen paused.
+  - Dark band: `.benchmark` bg `--bg` (contrasts the light `--bg-2` Stats/Solutions around it), `min-height:100vh` flex-centered so pinned content stays centered. CSS single-col + drop pin at 960px (breakpoint aligned between JS matchMedia and CSS).
+- Build clean: CSS 32.45 kB (gzip 7.39), JS 448.61 kB (gzip 151.49). Not pushed.
+- Follow-up (same day): moved `<Benchmark />` from after `<Stats />` to right after `<Testimonials />` (before `<Products />`) per user request. Still a dark band between two light sections.
+
+## 2026-07-23 — Whole-page stacked-sticky sections
+- Requested: "make the whole page have the sticky animation." Clarified (AskUserQuestion) → chose "Stacked sticky sections" (each section sticks to top, next scrolls up and overlaps it — stacking-cards effect).
+- Done:
+  - `App.jsx`: added a 2nd useEffect (the stacking controller). On mount + resize it measures every `main > section`; toggles class `is-stack` on those that (a) fit one screen (`scrollHeight <= innerHeight*1.05`, so pin-spacers/tall grids measure large and are skipped) and (b) aren't in EXCLUDE `['signal','proof','impact','benchmark']` (they run their own pin/scrub/clip-path GSAP). Calls `ScrollTrigger.refresh()` after. Bails entirely on reduced-motion.
+  - `global.css` (end): `main > section { background-color: var(--bg) }` low-spec opaque fallback (each section's own bg class/id still wins). `main > section.is-stack { position:sticky; top:0; min-height:100svh; overflow:hidden; border-top radius 20px; top box-shadow }` → sticky stack look.
+- Rationale for height auto-exclude: stacked-sticky only shows one screen while pinned, so forcing tall sections (Products/Solutions) to stick would hide their lower content. Instead tall + bespoke-anim sections stay in normal flow but the NEXT sticky section still covers them, so the stack reads continuously with zero content loss. Compatible with Lenis (default window scroll, not transform) and the existing GSAP pins (excluded).
+- Tuning: force-include/exclude any section by editing the EXCLUDE list or the fit test.
+- Build clean: CSS 32.67 kB (gzip 7.46), JS 449.08 kB (gzip 151.62). Not pushed.
+
+---
+
+### 2026-07-23 — Benchmark section rebuilt to match scale.com reference layout
+**Requested:** "make it look exactly like this but the color follows our palette" (screenshot of scale.com's "We set the benchmark for what's possible with AI" three-card section).
+
+**What was done:**
+- **src/sections/Benchmark.jsx** — Removed the media/icon panels and per-card accent SVGs. New structure per card: `.bench-card-title` (sits low via `margin-top:auto`), `.bench-card-body`, `.bench-more` "Learn More" chip pinned to bottom. Cards now carry a `variant` (`fill` for card 1, `plain` for cards 2 & 3) → className `bench-card--fill` / `bench-card--plain`. Copy kept as Clix-original. Heading unchanged. GSAP pinned reveal (heading settle + card stagger) preserved unchanged.
+- **src/styles/global.css** — Replaced the entire `.benchmark` block:
+  - `.bench-title` now **left-aligned**, larger (`clamp(34px,5.4vw,68px)`), `max-width:15ch`, tight line-height — matches the reference's big left heading.
+  - `.bench-card` tall (`min-height clamp(440px,58vh,600px)`), radius 18px, flex column.
+  - `.bench-card--fill` = accent crimson gradient fill (single colored tile), white title + 82%-white body + inverted solid-white button.
+  - `.bench-card--plain` = elevated dark surface `#16161f` + hairline `--line` border (the reference's gray tiles in dark theme).
+  - `.bench-more` = pill chip; hover → accent fill. On the fill card it's a solid white chip.
+  - Removed old `.bench-media`, `.bench-icon`, `bench-sheen` keyframes, `--bench-accent`.
+  - Mobile (`max-width:960px`): single column, shorter cards, heading stays left.
+- Clean build: CSS 32.56 kB (gzip 7.45), JS 448.38 kB (gzip 151.52).
+
+**State/next:** Benchmark still sits after Testimonials, still in the stacked-sticky EXCLUDE list. Nothing committed this session. Awaiting review of the live layout.
+
+---
+
+### 2026-07-23 — Benchmark: match reference proportions + remove card animation
+Follow-ups on the Benchmark section (scale.com reference match):
+- **Heading**: single line via `white-space: nowrap`, size `clamp(24→46px)` (was wrapping to 4 giant lines). Wraps on mobile.
+- **Card vertical rhythm**: text block sits lower-middle using two flex spacers `.bench-card::before {flex:2.2}` / `::after {flex:1}`; wide title→body gap `clamp(38→80px)`, tight body→button `clamp(22→44px)`; side padding `clamp(26→52px)`. Removed `margin-top:auto` on title.
+- **Header→cards gap fix**: removed `.benchmark { min-height:100vh; display:flex; align-items:center }` — centering an oversized (tall-card) block created a big void under the heading. Now top-aligns with normal `.section` 120px padding; gap = grid `margin-top` (~52px) only. Card `min-height` trimmed to `clamp(440→560px)`.
+- **Removed all GSAP animation** on the section (was catching cards mid-scrub, offsetting card 1): deleted the useGSAP pinned/scrub timeline + mobile stagger. Benchmark.jsx is now a static component (no refs, no gsap import). CSS `.bench-card:hover` lift retained.
+- Build: CSS 32.68 kB (gzip 7.49), JS 447.63 kB (gzip 151.36).
+
+State: Benchmark still after Testimonials, in stacked-sticky EXCLUDE list (now static, no own pin). Nothing committed this session.
+
+## 2026-07-23 — Benchmark cards: font + corner match to reference
+- Task: "make the cards look like this the font and shi the roundness of the corners" (scale.com reference).
+- Changes (global.css):
+  - `.bench-card-title` — font-family `var(--font-display)` (bold Space Grotesk 600) → `var(--font-body)` (Inter), weight 600 → 400, size clamp(22→27) → clamp(23→29), letter-spacing -0.01 → -0.015. Matches Scale's clean regular-weight card headings.
+  - `.bench-card` border-radius 16px → 10px (subtler corners per reference).
+- State: static section, build clean (CSS 32.68kB / 7.50 gzip). Nothing committed.
+
+## 2026-07-23 — Hero: swap to 3 uploaded local videos, 1.5s loop
+- Task: "change the video... 3 videos... 1.5 seconds duration each video put it on loop".
+- Moved root-folder uploads hero-eye.mp4 / hero-human-ai.mp4 / hero-socials.mp4 into public/hero/.
+- Hero.jsx: replaced the 4 hotlinked Pexels stock clips with these 3 local clips; ROTATE_MS 8000 -> 1500 (each holds 1.5s then crossfades, set loops endlessly). Simplified playback: all clips preload="auto" + play at once, only opacity toggles via `active` (removed lazy ensureLoaded + pause logic to avoid load stutter at the fast cadence).
+- global.css: .hero-clip transition 1.2s -> 0.6s so the crossfade fits inside the 1.5s cycle.
+- Build clean. Nothing committed. Noted to user 1.5s is fast (4.5s full cycle) — can slow if flickery.
+
+## 2026-07-23 — Hero videos: best-effort quality enhance
+- Task: "can you enhance the video quality?"
+- Root cause: source clips were only 736x414 (sub-480p), stretched ~2.6x to the full-screen hero = soft.
+- Re-encoded all 3 (public/hero/*.mp4) to 1920x1080 via ffmpeg lanczos scale + light unsharp; trimmed to 3s loop window (only 1.5s shown per cycle), crf 21 maxrate 6M -an faststart. Total ~7.5MB (same as originals, now 1080p).
+- Backed up raw uploads to hero-originals/ (added to .gitignore; kept out of dist since public/ ships wholesale).
+- Told user the honest limit: ffmpeg can't invent detail — true fix is higher-res sources or a real AI upscaler (Real-ESRGAN/Topaz). Offered to set that up.
+- Build clean. Nothing committed.
+
+## 2026-07-23 — Benchmark cards: add structure so they don't read as plain
+- User feedback: the three uniform service cards "look plain" at rest.
+- Kept the "empty format, no colors at rest" rule + the bottom-to-top accent hover fill. Added rest-state STRUCTURE instead of color:
+  - Editorial index number (01/02/03) pinned top-left, display font, tabular, faint (src/sections/Benchmark.jsx `.bench-index`).
+  - Overline kicker above each title (Conversational agents / Product engineering / Enablement) — neutral text-dim at rest.
+  - Faint inset top edge that brightens to a solid accent bar on hover (box-shadow inset).
+  - Sliding arrow SVG inside "Learn More" (translateX on hover).
+  - Surface changed from flat #16161f to a subtle 160deg gradient (#1a1a24 → #131319) for depth.
+- Hover unchanged in spirit: accent rises bottom→top, number/kicker/title/body brighten to white, top bar lights, button inverts to white chip.
+- Files: src/sections/Benchmark.jsx (index+kicker+arrow markup), src/styles/global.css (.bench-index, .bench-kicker, .bench-card--plain base+hover, .bench-more arrow). Build clean.
+
+## 2026-07-23 — Benchmark cards: fix vertical alignment inconsistency
+- Problem: card 02 (2-line title "Web & Mobile Development" + longer body) had its kicker riding up near the index number, while 01/03 kept theirs by the title. Cause: the two flex spacers (::before 2.2 / ::after 1) distributed leftover space proportionally, so unequal content height shifted each block to a different Y.
+- Fix (src/styles/global.css): anchor top + bottom, flex the middle.
+  - `.bench-card::before` now `flex: 0 0 clamp(118px,19vh,182px)` — FIXED top offset so number/kicker/title start on the same line every card.
+  - Removed `.bench-card::after` spacer.
+  - `.bench-card-body` `margin-top: auto` (+ `padding-top` min gap) — pushes body+button to the bottom so button baselines align; the title→body gap flexes to absorb copy-length differences.
+  - Mobile: `.bench-card::before { flex-basis: clamp(76px,14vw,120px) }` so the offset isn't oversized single-column.
+- Result: tops (number/kicker/title) and bottoms (button) both align across all 3 cards. Build clean.
+
+## 2026-07-24 — Founder lecture video section
+- Task: insert a video of Ido talking (lecture-preview.mp4). User chose a dedicated new section.
+- Moved video → public/lecture/lecture-preview.mp4 (16:9, 1024x576, ~6.4s).
+- New src/sections/Lecture.jsx: two-column band (copy left, framed video right), Framer Motion whileInView entrance. Label "From the founder", title "Operational AI, taught first-hand". Video autoplays muted+loop as ambient preview; a glass "Play with sound" toggle button unmutes (browsers block autoplay-with-audio, so sound is user-initiated).
+- App.jsx: imported Lecture, placed it between <Benchmark /> and <Products /> (services → founder lecture flow). Not in stacked-sticky EXCLUDE list, so it participates like Products/Solutions.
+- global.css: .lecture-grid + frame (aspect-ratio 16/9, accent glow on hover) + .lecture-sound pill; single-column stack under 900px.
+- Build clean (css 35.74kB / js 449.54kB).
+
+## 2026-07-24 — Client stories: video testimonials replace Products section
+- Task: replace the "One platform, every stage of the AI lifecycle" Products section with a real client-testimonials video section.
+- Sourced 4 vertical (1080x1920, 9:16) client clips from Desktop/clix-website/client-testimonials → copied to public/testimonials/ (adir-peretz, asaf-peretz, nevo-yahaloman, noam-tovi; ~20-30s each). Extracted 540px poster frames via ffmpeg → public/testimonials/posters/*.jpg.
+- New src/sections/VideoTestimonials.jsx (id="stories"): label "Client stories", title "Teams that build with Clix, in their own words". Responsive grid of 4 portrait cards, each preload="none" behind a poster. Tap plays that clip WITH sound and pauses any other (single voice at a time); tap again pauses; onEnded resets. Framer Motion stagger entrance (respects reduced motion). Real names only, no fabricated titles (labelled "Clix client").
+- App.jsx: replaced <Products /> import + render with <VideoTestimonials />. Products.jsx left in repo, now unused. Not in stacked-sticky EXCLUDE list.
+- global.css: .vtm-grid (4 cols → 2 under 1100px → horizontal snap row under 640px), .vtm-frame (aspect-ratio 9/16, accent glow + lift on hover), centered glass .vtm-play toggle that retreats while playing, bottom-gradient .vtm-caption.
+- NOTE: Navbar still has a "Products" link → #products, which no longer resolves (new section is #stories). Flagged to user; not yet repointed.
+- Build clean (css 38.05kB / js 450.23kB).
+
+## 2026-07-24 — Client stories: height fix, 5th video (Achituv), uniform layout
+
+Fixed the earlier vertical clipping and made the section uniform, plus added a fifth testimonial.
+
+- App.jsx: added 'stories' to the stacked-sticky EXCLUDE array so the tall 9:16 cards stay in normal flow (the .is-stack min-height:100svh + overflow:hidden was cutting them off at the viewport bottom).
+- Added Achituv-Review.MOV (root, 2160x3840 HEVC, 69s) → converted to public/testimonials/achituv-review.mp4 (1080x1920 H.264, ~34MB) + poster achituv-review.jpg. Now 5 clients: Adir Peretz, Asaf Peretz, Achituv, Nevo Yahaloman, Noam Tovi.
+- global.css uniformity pass: .vtm-grid is now repeat(5, 1fr) on desktop (one clean row). Below 1100px it becomes a horizontal snap row (flex, card basis clamp(220px,34vw,300px)) so five cards never orphan into an uneven second row; under 640px card basis 68%. Added a consistent top+bottom vignette (.vtm-frame::after) so bright rooms/skies and darker clips read as one cohesive set; it fades out while a clip plays. Gave .vtm-play and .vtm-caption z-index:2 to sit above the vignette.
+- Build clean (css 38.42kB / js 450.28kB).
+- STILL OPEN: Navbar "Products" link → #products still dangles (section is #stories); "Achituv" has first name only (no surname/role, matching the no-fabricated-titles rule).
+
+## 2026-07-24 — Trim page to end at video testimonials
+
+- App.jsx: removed <Stats />, <Solutions />, <Research />, <CTA /> from render and their imports. Page now ends with <VideoTestimonials /> then <Footer />. Section files left in repo (unused).
+- Final order: Hero, Signal, Proof, Impact, Testimonials, Benchmark, Lecture, VideoTestimonials, Footer.
+- Build clean (css 38.42kB / js 445.30kB).

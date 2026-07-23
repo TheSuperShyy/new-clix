@@ -9,6 +9,7 @@ clone.html
 
 # Raw source videos (huge originals; compressed web loops live in public/impact)
 Shorts Video Clix/
+Achituv-Review.MOV
 
 # Logs
 *.log
@@ -25,3 +26,4 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+hero-originals/

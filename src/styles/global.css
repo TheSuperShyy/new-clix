@@ -332,7 +332,7 @@ ul { list-style: none; }
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transition: opacity 0.6s ease;
 }
 .hero-clip.is-active { opacity: 1; }
 .hero-overlay {
@@ -1658,4 +1658,450 @@ ul { list-style: none; }
   .tm-card { flex-basis: 82vw; min-height: 300px; padding: 24px; }
   .tm-bar { flex-direction: column; align-items: flex-start; }
   .tm-title { white-space: normal; }
+}
+
+/* ============ Benchmark (pinned three-card capability band) ============ */
+.benchmark {
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* Big left-aligned display heading — single line, matching the reference. */
+.bench-title {
+  max-width: none;
+  text-align: left;
+  margin: 0;
+  font-size: clamp(24px, 3.4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.bench-grid {
+  margin-top: clamp(28px, 3.4vw, 52px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 1.4vw, 22px);
+}
+
+/* Tall cards. The text block sits in the lower-middle with a wide gap between
+   title and body, matching the reference. Two flex spacers hold the block in a
+   ~2.2 : 1 top-to-bottom ratio so the layout reads identically at any height. */
+.bench-card {
+  position: relative;
+  min-height: clamp(440px, 56vh, 560px);
+  border-radius: 10px;
+  padding: clamp(20px, 2.4vh, 34px) clamp(26px, 3vw, 52px);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  will-change: transform, opacity;
+}
+/* Fixed top offset — drops the kicker/title block to the same start line on
+   every card. The flexible gap (see .bench-card-body margin-top: auto) below
+   the title absorbs any difference in title/body length, so tops AND button
+   baselines stay aligned regardless of copy length. */
+.bench-card::before { content: ''; flex: 0 0 clamp(118px, 19vh, 182px); }
+.bench-card:hover {
+  transform: translateY(-6px);
+}
+
+/* Editorial index number, pinned top-left over the upper spacer. */
+.bench-index {
+  position: absolute;
+  top: clamp(20px, 2.4vh, 34px);
+  left: clamp(26px, 3vw, 52px);
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 2.2vw, 38px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 244, 246, 0.16);
+  transition: color 0.6s ease;
+}
+
+/* Small overline label sitting directly above the title. Neutral at rest. */
+.bench-kicker {
+  align-self: flex-start;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.6s ease;
+}
+
+/* Neutral surface cards (2 & 3) — the "light gray" tiles from the reference,
+   mapped to an elevated dark surface. On hover an accent gradient rises from
+   the bottom edge to the top: a second background layer whose height animates
+   from 0% to 100%, anchored to the bottom. */
+.bench-card--plain {
+  background-image:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--accent) 90%, #000),
+      color-mix(in srgb, var(--accent) 62%, #14060b)
+    ),
+    linear-gradient(160deg, #1a1a24, #131319 62%);
+  background-repeat: no-repeat;
+  background-position: bottom center, center;
+  background-size: 100% 0%, 100% 100%;
+  border: 1px solid var(--line);
+  /* Faint top edge at rest; brightens to an accent bar on hover. */
+  box-shadow: inset 0 1px 0 rgba(244, 244, 246, 0.07);
+  transition: transform 0.35s ease, box-shadow 0.5s ease,
+    background-size 0.7s ease, border-color 0.7s ease;
+}
+.bench-card--plain:hover {
+  background-size: 100% 100%, 100% 100%;
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow: inset 0 2px 0 var(--accent),
+    0 24px 70px -26px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+/* Text, number, and button fade to their "on-accent" reading as the fill rises. */
+.bench-card--plain:hover .bench-index { color: rgba(255, 255, 255, 0.55); }
+.bench-card--plain:hover .bench-kicker { color: rgba(255, 255, 255, 0.72); }
+.bench-card--plain:hover .bench-card-title { color: #fff; }
+.bench-card--plain:hover .bench-card-body { color: rgba(255, 255, 255, 0.85); }
+.bench-card--plain:hover .bench-more {
+  background: #fff;
+  border-color: #fff;
+  color: #12060a;
+}
+
+/* Accent-filled card (1) — the single colored tile from the reference. */
+.bench-card--fill {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--accent) 90%, #000),
+    color-mix(in srgb, var(--accent) 62%, #14060b)
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.bench-card--fill:hover {
+  box-shadow: 0 24px 70px -26px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.bench-card-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: clamp(23px, 1.8vw, 29px);
+  font-weight: 400;
+  line-height: 1.24;
+  letter-spacing: -0.015em;
+  transition: color 0.6s ease;
+}
+
+/* Flexible gap: margin-top: auto pushes the body + button group to the bottom,
+   so button baselines align across cards while the title stays top-anchored. */
+.bench-card-body {
+  margin-top: auto;
+  padding-top: clamp(28px, 5vh, 64px);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  transition: color 0.6s ease;
+}
+
+/* On the filled card everything reads as light text on accent. */
+.bench-card--fill .bench-card-title { color: #fff; }
+.bench-card--fill .bench-card-body {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.bench-more {
+  align-self: flex-start;
+  margin-top: clamp(22px, 3.6vh, 44px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  background: rgba(244, 244, 246, 0.06);
+  border: 1px solid var(--line);
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.25s ease,
+    color 0.4s ease;
+}
+.bench-more-arrow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bench-more:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+}
+.bench-more:hover .bench-more-arrow {
+  transform: translateX(4px);
+}
+/* On the accent card the button inverts to a solid light chip. */
+.bench-card--fill .bench-more {
+  background: #fff;
+  border-color: #fff;
+  color: #12060a;
+}
+.bench-card--fill .bench-more:hover {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(255, 255, 255, 0.86);
+  color: #12060a;
+}
+
+@media (max-width: 960px) {
+  .bench-grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  .benchmark { min-height: 0; padding: 88px 0; }
+  .bench-card { min-height: clamp(340px, 62vw, 440px); }
+  .bench-card::before { flex-basis: clamp(76px, 14vw, 120px); }
+  .bench-title {
+    text-align: left;
+    white-space: normal;
+    font-size: clamp(30px, 8vw, 44px);
+  }
+}
+
+/* ============ Lecture (founder video preview) ============ */
+.lecture-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(36px, 5vw, 80px);
+  align-items: center;
+}
+.lecture-copy .section-title {
+  max-width: 460px;
+}
+.lecture-copy .section-sub {
+  max-width: 440px;
+}
+.lecture-stage {
+  position: relative;
+}
+.lecture-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #08080b;
+  box-shadow: 0 34px 90px -34px rgba(0, 0, 0, 0.8);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+.lecture-frame:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 34px 90px -30px rgba(0, 0, 0, 0.8),
+    0 0 60px -18px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.lecture-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lecture-sound {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px 9px 12px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fff;
+  cursor: pointer;
+  background: rgba(12, 12, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  transition: background 0.35s ease, border-color 0.35s ease,
+    transform 0.25s ease;
+}
+.lecture-sound:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.lecture-sound svg {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .lecture-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(28px, 6vw, 40px);
+  }
+  .lecture-copy .section-title,
+  .lecture-copy .section-sub {
+    max-width: none;
+  }
+  .lecture { min-height: 0; padding: 88px 0; }
+}
+
+/* ============ Client stories (video testimonials) ============ */
+.vtm-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(14px, 1.4vw, 20px);
+  margin-top: clamp(40px, 5vw, 64px);
+}
+.vtm-card {
+  position: relative;
+  border-radius: 18px;
+}
+.vtm-frame {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #08080b;
+  box-shadow: 0 30px 70px -34px rgba(0, 0, 0, 0.85);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s ease;
+}
+.vtm-card:hover .vtm-frame {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 34px 80px -30px rgba(0, 0, 0, 0.85),
+    0 0 56px -20px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.vtm-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+/* Consistent top-and-bottom vignette so bright rooms/skies and darker clips
+   all read as one cohesive set rather than a row of mismatched brightness. */
+.vtm-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 9, 0.28) 0%,
+    rgba(6, 6, 9, 0) 26%,
+    rgba(6, 6, 9, 0) 68%,
+    rgba(6, 6, 9, 0.35) 100%
+  );
+  transition: opacity 0.35s ease;
+}
+.vtm-card.is-playing .vtm-frame::after { opacity: 0; }
+.vtm-card.is-playing:hover .vtm-frame::after { opacity: 1; }
+/* Play/pause control, centered over the poster. */
+.vtm-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+  background: rgba(12, 12, 16, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  transition: opacity 0.35s ease, background 0.3s ease, border-color 0.3s ease,
+    transform 0.25s ease;
+}
+.vtm-play:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.vtm-play svg { margin-left: 1px; }
+/* While a clip plays, retreat the button so the face is unobstructed; it
+   returns on hover (desktop) — on touch, tapping the video toggles pause. */
+.vtm-card.is-playing .vtm-play { opacity: 0; }
+.vtm-card.is-playing:hover .vtm-play { opacity: 1; }
+
+.vtm-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 40px 16px 14px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(6, 6, 9, 0.82), transparent);
+  transition: opacity 0.35s ease;
+}
+.vtm-card.is-playing .vtm-caption { opacity: 0; }
+.vtm-card.is-playing:hover .vtm-caption { opacity: 1; }
+.vtm-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+.vtm-tag {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+/* Below the desktop 5-across grid, switch to a horizontal snap row so the five
+   portrait cards never split into an uneven second row. Card width tightens by
+   breakpoint so each clip stays watchable. */
+@media (max-width: 1100px) {
+  .vtm { min-height: 0; padding: 96px 0; }
+  .vtm-grid {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-inline: calc(var(--pad, 24px) * -1);
+    padding-inline: var(--pad, 24px);
+    -webkit-overflow-scrolling: touch;
+  }
+  .vtm-grid::-webkit-scrollbar { display: none; }
+  .vtm-card {
+    flex: 0 0 clamp(220px, 34vw, 300px);
+    scroll-snap-align: center;
+  }
+}
+@media (max-width: 640px) {
+  .vtm { padding: 88px 0; }
+  .vtm-grid { gap: 14px; }
+  .vtm-card { flex: 0 0 68%; }
+}
+
+/* ============ Whole-page stacked-sticky sections ============ */
+/* Opaque fallback so a stacked section never shows through to the one it
+   covers. Low specificity — each section's own bg class/id still wins. */
+main > section { background-color: var(--bg); }
+
+/* Screen-sized sections stick to the top; the next section scrolls up and
+   overlaps, so they read as a stack of cards. `.is-stack` is toggled from
+   App.jsx (only sections that fit one screen and run no bespoke scroll anim). */
+main > section.is-stack {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  overflow: hidden;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -18px 50px -12px rgba(0, 0, 0, 0.4);
 }
