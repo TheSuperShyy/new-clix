@@ -493,3 +493,38 @@ Fixed the earlier vertical clipping and made the section uniform, plus added a f
 - App.jsx: removed <Stats />, <Solutions />, <Research />, <CTA /> from render and their imports. Page now ends with <VideoTestimonials /> then <Footer />. Section files left in repo (unused).
 - Final order: Hero, Signal, Proof, Impact, Testimonials, Benchmark, Lecture, VideoTestimonials, Footer.
 - Build clean (css 38.42kB / js 445.30kB).
+
+## 2026-07-24 — Mobile: stop hiding the CRM and the Proof video
+
+Two elements were display:none on small screens; user wanted everything visible on mobile, especially the CRM.
+
+- Signal CRM (.signal-app) was display:none ≤1100px. Now shown. On ≤1100px the Signal section un-pins into a normal stacked block (canvas banner → headline centered → CRM). The CRM renders at a fixed 1000px design width; new fitApp() in Signal.jsx scales it (transform + transform-origin top-left) to the mount width and sets the mount height, so the whole dashboard is visible at once (user chose "scaled full screenshot" over reflow/swipe). Added .signal-app-mount wrapper (display:contents on desktop so the app stays absolute/docked; a real overflow-hidden box on mobile) + mountRef. GSAP matchMedia split into desktop (min-width:1101px) pinned/reduced branches + a (max-width:1100px) mobile branch that clears the cover-scale, shows copy/app, runs canvas (unless reduced motion), and calls fitApp on load+resize. fitApp runs in useLayoutEffect so no pre-scale flash.
+- Proof media video (.proof-media, Pexels clips) was display:none ≤1000px. Now static in flow above the sentence card. Proof.jsx pin restricted to min-width:1001px; added (max-width:1000px) branch (words lit, media transform cleared). CSS: .proof min-height:0, media position:static width min(380px,100%-40) centered.
+- Other sections already had mobile handling (Impact carousel, Testimonials/VideoTestimonials horizontal rows, Lecture stack, nav burger) — left as-is.
+- Build clean (css 39.33kB / js 446.21kB). Not committed.
+
+## 2026-07-24 — Reverted the mobile CRM change
+
+- User asked to revert the CRM. Restored src/sections/Signal.jsx to HEAD (removed mount wrapper, fitApp scaling, matchMedia split) and put back `@media (max-width:1100px){ .signal-app { display:none } }`. CRM is hidden on mobile again, as before.
+- Kept the Proof video mobile fix (media now visible in flow ≤1000px) — only the CRM was reverted.
+- Build clean (css 38.49kB / js 445.47kB).
+
+## 2026-07-24 — Mobile: CRM in Signal top space, square corners, nav menu, Ido icon
+
+- Signal CRM re-added on mobile (undoing the prior revert), this time floating in the free space above the headline. Section stays pinned on mobile; .signal-app-mount is absolute top-center (top clamp(60,11svh,122), width min(440px,84%), overflow hidden), and fitApp() scales the 1000px-design app to fit. Separate GSAP branches: desktop min-width:1101px (pinned dock, unchanged) + reduce; mobile max-width:1100px no-preference (own pinned timeline that fades the MOUNT in — opacity only — while fitApp owns the app transform, so no clash) + mobile reduce (static). mountRef added.
+- Square corners on mobile: @media ≤900px zeroes .is-stack border-top radii (rounded stacked-card corners read as a glitch on phones).
+- Navbar mobile menu: added a working hamburger (.nav-burger, animates to X) + AnimatePresence dropdown (.nav-mobile) with the 4 links + Log In. Shown ≤720px where the inline links/ghost button hide. .nav given position:relative to anchor the dropdown. (Interpreted user's "add a menu icon on mobile" as the missing navbar menu.)
+- Ido/Lecture button: hide the speaker svg ≤900px (text-only "Play with sound" pill).
+- Build clean (css 40.15kB / js 447.59kB). Not committed.
+
+---
+
+### 2026-07-24 — Signal CRM: delayed drop-in on mobile
+
+**Requested:** Whole page should read first — delay the shrunk CRM and make its entrance a smooth "falling down" animation.
+
+**Done (src/sections/Signal.jsx, mobile no-preference matchMedia branch):**
+- Reordered the pinned timeline so the headline/copy reveals first (moved copy reveal earlier, to 0.42).
+- CRM mount now drops in later (at 0.72) and falls from above: `fromTo` starts at `y = -(mount height + 40)` (fully above its resting spot) → `y: 0` with `ease: 'back.out(1.35)'` for a gentle settle. fitApp() still owns the app's scale transform; the timeline only touches the mount's y+autoAlpha, so no transform clash.
+
+**State:** Build clean (css 40.15kB / js 447.67kB). Desktop, reduced-motion, and tablet-static branches untouched. Awaiting user reload/screenshot to confirm timing feels right.

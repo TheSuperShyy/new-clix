@@ -223,6 +223,7 @@ export default function Signal() {
   const cardRef = useRef(null)
   const copyRef = useRef(null)
   const appRef = useRef(null)
+  const mountRef = useRef(null)
   const canvasRef = useRef(null)
   const splitRef = useRef(null)
 
@@ -297,12 +298,29 @@ export default function Signal() {
           window.innerHeight / card.offsetHeight,
         ) * 1.02
 
+      // Mobile/tablet: shrink the CRM mockup (rendered at its fixed desktop
+      // design width) to fit its mount, so the whole dashboard shows at once
+      // floating in the free space above the headline.
+      const fitApp = () => {
+        const mount = mountRef.current
+        const app = appRef.current
+        if (!mount || !app) return
+        const s = mount.clientWidth / app.offsetWidth
+        app.style.transform = `scale(${s})`
+        mount.style.height = `${app.offsetHeight * s}px`
+      }
+      const clearFit = () => {
+        if (appRef.current) appRef.current.style.transform = ''
+        if (mountRef.current) mountRef.current.style.height = ''
+      }
+
       resize()
       window.addEventListener('resize', resize)
 
       const mm = gsap.matchMedia()
 
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add('(min-width: 1101px) and (prefers-reduced-motion: no-preference)', () => {
+        clearFit()
         raf = requestAnimationFrame(tick)
 
         const tl = gsap.timeline({
@@ -357,13 +375,73 @@ export default function Signal() {
         return () => cancelAnimationFrame(raf)
       })
 
-      // Static equivalent for reduced motion: card already fills the
+      // Static equivalent for reduced motion (desktop): card already fills the
       // section as background, headline visible on top.
-      mm.add('(prefers-reduced-motion: reduce)', () => {
+      mm.add('(min-width: 1101px) and (prefers-reduced-motion: reduce)', () => {
+        clearFit()
         gsap.set(card, { scale: coverScale(), borderRadius: 0, borderColor: 'transparent' })
-        // No scroll choreography: the end-state headline is already shown,
-        // so the intro word pair would just overlap it.
         gsap.set(splitRef.current, { autoAlpha: 0 })
+      })
+
+      // Mobile/tablet: same pinned zoom, but the CRM rides along in the free
+      // space above the headline (scaled to fit). fitApp() owns the app's
+      // transform; the timeline only fades the mount, so they never clash.
+      mm.add('(max-width: 1100px) and (prefers-reduced-motion: no-preference)', () => {
+        fitApp()
+        window.addEventListener('resize', fitApp)
+        raf = requestAnimationFrame(tick)
+
+        // The dashboard drop is a real-time one-shot, NOT part of the scrub —
+        // so once it falls in it stays fixed in place while you keep
+        // scrolling, instead of rewinding with the scroll position.
+        const hidden = () => -(mountRef.current?.offsetHeight || 260) - 40
+        gsap.set(mountRef.current, { autoAlpha: 0, y: hidden })
+        const drop = gsap.fromTo(
+          mountRef.current,
+          { autoAlpha: 0, y: hidden },
+          { autoAlpha: 1, y: 0, ease: 'back.out(1.4)', duration: 0.7, paused: true },
+        )
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top top',
+            end: '+=150%',
+            scrub: true,
+            pin: true,
+            invalidateOnRefresh: true,
+            // Play the drop once the headline is in; hold it fixed thereafter,
+            // and tuck it away only if you scroll back up to the intro.
+            onUpdate: (self) => {
+              if (self.progress > 0.5) drop.play()
+              else drop.reverse()
+            },
+          },
+        })
+        const [wordL, wordR] = splitRef.current.children
+
+        tl.to(card, { scale: coverScale, ease: 'power1.inOut', duration: 1 }, 0)
+          .to(card, { borderRadius: 0, borderColor: 'transparent', duration: 0.2 }, 0.15)
+          .to(wordL, { x: () => -window.innerWidth * 0.55, autoAlpha: 0, ease: 'power1.in', duration: 0.35 }, 0)
+          .to(wordR, { x: () => window.innerWidth * 0.55, autoAlpha: 0, ease: 'power1.in', duration: 0.35 }, 0)
+          // Headline lands first so the whole page reads before the drop.
+          .fromTo(copyRef.current, { autoAlpha: 0, y: 36 }, { autoAlpha: 1, y: 0, ease: 'power2.out', duration: 0.3 }, 0.42)
+
+        return () => {
+          cancelAnimationFrame(raf)
+          window.removeEventListener('resize', fitApp)
+          drop.kill()
+        }
+      })
+
+      // Mobile, reduced motion: static end-state with the CRM already placed.
+      mm.add('(max-width: 1100px) and (prefers-reduced-motion: reduce)', () => {
+        fitApp()
+        window.addEventListener('resize', fitApp)
+        gsap.set(card, { scale: coverScale(), borderRadius: 0, borderColor: 'transparent' })
+        gsap.set(splitRef.current, { autoAlpha: 0 })
+        gsap.set([copyRef.current, mountRef.current], { autoAlpha: 1 })
+        return () => window.removeEventListener('resize', fitApp)
       })
 
       return () => {
@@ -385,6 +463,7 @@ export default function Signal() {
           <span className="signal-split-word">Intelligence</span>
         </div>
 
+        <div className="signal-app-mount" ref={mountRef}>
         <div className="signal-app" ref={appRef} aria-hidden="true">
           <aside className="sapp-side">
             <div className="sapp-logo">
@@ -584,6 +663,7 @@ export default function Signal() {
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         <div className="signal-copy" ref={copyRef}>

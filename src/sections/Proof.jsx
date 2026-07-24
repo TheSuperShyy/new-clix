@@ -63,7 +63,7 @@ export default function Proof() {
     () => {
       const mm = gsap.matchMedia()
 
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      mm.add('(min-width: 1001px) and (prefers-reduced-motion: no-preference)', () => {
         // The section arrives plain (every word dim), sticks to the top,
         // and only releases once the whole sentence has been revealed.
         const tl = gsap.timeline({
@@ -112,7 +112,14 @@ export default function Proof() {
         )
       })
 
-      mm.add('(prefers-reduced-motion: reduce)', () => {
+      // Mobile/tablet: no pin. Static stacked layout (media above the card),
+      // sentence shown fully lit so nothing depends on the scrub.
+      mm.add('(max-width: 1000px)', () => {
+        gsap.set('.proof-word', { opacity: 1 })
+        gsap.set('.proof-media', { clearProps: 'transform' })
+      })
+
+      mm.add('(min-width: 1001px) and (prefers-reduced-motion: reduce)', () => {
         gsap.set('.proof-word', { opacity: 1 })
       })
     },

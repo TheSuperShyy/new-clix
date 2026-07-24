@@ -7,6 +7,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [hidden, setHidden] = useState(false)
   const [showAnnounce, setShowAnnounce] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(false)
   const lastY = useRef(0)
   const announceRef = useRef(null)
   const announceVisible = showAnnounce && !scrolled
@@ -102,8 +103,49 @@ export default function Navbar() {
             <a href="#cta" className="btn btn-primary">
               Book Demo
             </a>
+            <button
+              type="button"
+              className={`nav-burger ${menuOpen ? 'is-open' : ''}`}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.nav
+              className="nav-mobile"
+              key="nav-mobile"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {LINKS.map((link) => (
+                <a
+                  key={link}
+                  href={`#${link.toLowerCase()}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link}
+                </a>
+              ))}
+              <a
+                href="#login"
+                className="nav-mobile-login"
+                onClick={() => setMenuOpen(false)}
+              >
+                Log In
+              </a>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   )
